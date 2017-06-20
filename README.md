@@ -1,4 +1,4 @@
-# CarND-Controls-MPC
+# CarND MPC Project
 My hand in for the Self-Driving Car Engineer Nanodegree Program
 
 ## What I did
