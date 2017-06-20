@@ -42,8 +42,6 @@ where x and y are the position of the car, psi is the orientation, v
 the velocity and cte is the cross track error and epsi the error in
 orientation.
 
-The 
-
 This is a simplified model that ignore things like mass.
 
 ### The reasoning behind the chosen N
