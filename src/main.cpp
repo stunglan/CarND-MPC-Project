@@ -143,8 +143,11 @@ int main() {
           
 
           // find errors and run the solver from lectures
-          double cte = polyeval(coeffs, px);
-          double epsi = atan(coeffs[1]);
+          // submission 2 changed the second parameter as we now use the cars coordinate systems
+          double cte = polyeval(coeffs, 0.0);
+          // derivative for third order when in the car coordinate system are -atan(coeffs[1]);
+          // https://discussions.udacity.com/t/mpc-quiz-help-needed-for-understanding/251178/21
+          double epsi = -atan(coeffs[1]);
           Eigen::VectorXd state(6);
           state[0] = 0;
           state[1] = 0;

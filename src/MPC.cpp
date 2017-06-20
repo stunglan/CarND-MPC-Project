@@ -9,7 +9,7 @@ using CppAD::AD;
 
 // TODO: Set the timestep length and duration
 size_t N = 10; // 10
-double dt = 0.2; // 0.2
+double dt = 0.1; // 0.2
 // This value assumes the model presented in the classroom is used.
 //
 // It was obtained by measuring the radius formed by running the vehicle in the
@@ -23,7 +23,7 @@ double dt = 0.2; // 0.2
 const double Lf = 2.67;
 
 //  set speed to 40
-double ref_v = 40;
+double ref_v = 70;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -132,8 +132,7 @@ public:
       fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
       fg[1 + cte_start + t] =
       cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
-      fg[1 + epsi_start + t] =
-      epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+      fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
       fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
     }
   }
