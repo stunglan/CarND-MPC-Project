@@ -19,7 +19,7 @@ displayed in the simulator.
 I still do not understand the implications of all coeffisients, what
 an optimal timestep and deltatime are, but the car keeps on the road ;)
 
-## Addendum, second submit
+## Addendum; second submission
 ### Code comments
 I  implemented the code suggestions from the reviewer. Lowering the
 delta (dt) in MPC.cpp to 0.1; setting the second argument for polyeval
@@ -39,7 +39,10 @@ https://github.com/udacity/CarND-MPC-Quizzes/tree/master/mpc_to_line/solution
 
 ```
 where x and y are the position of the car, psi is the orientation, v
-the velocity and 
+the velocity and cte is the cross track error and epsi the error in
+orientation.
+
+The 
 
 This is a simplified model that ignore things like mass.
 
