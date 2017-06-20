@@ -91,8 +91,7 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-
-          
+   
           /*
            * TODO: Calculate steering angle and throttle using MPC.
            *
@@ -148,6 +147,9 @@ int main() {
           // derivative for third order when in the car coordinate system are -atan(coeffs[1]);
           // https://discussions.udacity.com/t/mpc-quiz-help-needed-for-understanding/251178/21
           double epsi = -atan(coeffs[1]);
+
+          
+          
           Eigen::VectorXd state(6);
           state[0] = 0;
           state[1] = 0;

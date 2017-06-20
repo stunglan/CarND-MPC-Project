@@ -8,7 +8,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 10; // 10
+size_t N = 15; // 10
+// second submission, the delta is decreased to 0.1
 double dt = 0.1; // 0.2
 // This value assumes the model presented in the classroom is used.
 //
@@ -19,11 +20,10 @@ double dt = 0.1; // 0.2
 // Lf was tuned until the the radius formed by the simulating the model
 // presented in the classroom matched the previous radius.
 //
-// This is the length from front to CoG that has a similar radius.
-const double Lf = 2.67;
+
 
 //  set speed to 40
-double ref_v = 70;
+double ref_v = 40;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -36,6 +36,16 @@ size_t cte_start = v_start + N;
 size_t epsi_start = cte_start + N;
 size_t delta_start = epsi_start + N;
 size_t a_start = delta_start + N - 1;
+
+double cte_smoother = 300.; //300
+double epsi_smoother = 300.; //300
+double v_smoother = 1.;
+
+double delta_smoother1 = 1.;
+double delta_smoother2 = 1.;
+double a_smoother1 = 1.;
+double a_smoothe2 = 1.;
+
 
 
 class FG_eval {
@@ -51,27 +61,26 @@ public:
     fg[0] = 0;
     
     // Reference State Cost
-    // added smoother as sugessted in the lecture
-    double smoother = 700;
     for (int t = 0; t < N; t++) {
-      fg[0] += smoother* CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += smoother* CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += cte_smoother* CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += epsi_smoother* CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += v_smoother * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
     
     // Minimize the use of actuators.
+
     for (int t = 0; t < N - 1; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += delta_smoother1 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += a_smoother1 * CppAD::pow(vars[a_start + t], 2);
     }
     
     // Minimize the value gap between sequential actuations.
-    smoother = 100;
+
     for (int t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
-      fg[0] += smoother * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += delta_smoother2*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += a_smoothe2* CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
+    
     //
     // Setup Constraints
     //
@@ -141,7 +150,11 @@ public:
 //
 // MPC class definition implementation.
 //
-MPC::MPC() {}
+MPC::MPC() {
+  last_delta = 0.0;
+  last_a = 0.0;
+  
+}
 MPC::~MPC() {}
 
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
@@ -181,6 +194,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   
   // Set all non-actuators upper and lowerlimits
   // to the max negative and positive values.
+  int dtperlatency = (int) dt/latency;
+  
   for (int i = 0; i < delta_start; i++) {
     vars_lowerbound[i] = -1.0e19;
     vars_upperbound[i] = 1.0e19;
@@ -192,6 +207,13 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (int i = delta_start; i < a_start; i++) {
     vars_lowerbound[i] = -0.436332;
     vars_upperbound[i] = 0.436332;
+    
+  }
+  
+  // follow method two in recommendation from submission one, not change in during latency
+  for (int i = delta_start; i < delta_start + dtperlatency; i++) {
+    vars_lowerbound[i] = last_delta;
+    vars_upperbound[i] = last_delta;
   }
   
   // Acceleration/decceleration upper and lower limits.
@@ -199,6 +221,12 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (int i = a_start; i < n_vars; i++) {
     vars_lowerbound[i] = -1.0;
     vars_upperbound[i] = 1.0;
+  }
+  
+  // follow method two in recommendation from submission one, not change in during latency
+  for (int i = a_start; i < a_start + dtperlatency; i++) {
+    vars_lowerbound[i] = last_a;
+    vars_upperbound[i] = last_a;
   }
   
   // Lower and upper limits for constraints
@@ -256,6 +284,14 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // Check some of the solution values
   ok &= solution.status == CppAD::ipopt::solve_result<Dvector>::success;
   
+  if (ok) {
+     std::cout << "Status OK " << ok << std::endl;
+  }
+  else {
+    std::cout << "Status *NOT* OK" << ok << std::endl;
+  }
+  
+  
   // Cost
   auto cost = solution.obj_value;
   std::cout << "Cost " << cost << std::endl;
@@ -263,6 +299,9 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // TODO: Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
 
+  // The first actuator vector after latency is used.
+  last_delta = solution.x[delta_start + dtperlatency];
+  last_a = solution.x[a_start + dtperlatency];
 
   // return first steering and throttle,
   // then the timesteps for the projection, and the vector length
