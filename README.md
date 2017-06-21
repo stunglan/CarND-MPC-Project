@@ -91,7 +91,7 @@ equations in main.cpp:
 The car now runs ok at much higher speed.
 
 ### The reasoning behind the chosen N
-I kept the N at 15 and dt at 0.1, creating a horizon at 1.5 seconds. This seems to make a good reasonable
-horizon for the look ahead for the prediction. The car runs ok with N
+I kept the N at 15 and dt at 0.1, creating a horizon at 1.5
+seconds. This seems to make a good reasonable horizon for the prediction. The car runs ok with N
 at 20, two seconds ahead, but I cannot observe any significant
 improvement in the projected path (green line).
