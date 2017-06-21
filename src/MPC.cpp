@@ -23,7 +23,10 @@ double dt = 0.1; // 0.2
 
 
 //  set speed to 40
-double ref_v = 40;
+double ref_v = 50; // runs ok with 70
+
+
+
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
