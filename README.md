@@ -88,7 +88,8 @@ equations in main.cpp:
           state[5] = epsi - (v / Lf) * delta * 0.1;
 ```
 
-The car now runs ok at much higher speed.
+The car now runs ok at much higher speed, and never leaves the road in
+my simulation.
 
 ### The reasoning behind the chosen N
 I kept the N at 15 and dt at 0.1, creating a horizon at 1.5
